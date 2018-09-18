@@ -11,7 +11,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 library(knitr)
 options(digits=3)
-setwd("~/Documents/Courses/Data_Sci/08_Practical_Machine_Learning/prediction")
 set.seed(79173)
 ```
 
