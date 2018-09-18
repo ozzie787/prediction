@@ -74,6 +74,11 @@ The resulting model was tested using the `test` data set using `predict()` from 
 plotgbm <- plotter(modfitgbm, test, test$classe)
 a1 <- accu(modfitgbm, train, train$classe)
 a2 <- accu(modfitgbm, test, test$classe)
+message(c("Out of sample error on trainning and test set ", a1, "%", " and ", a2, "%"))
+```
+
+```
+## Out of sample error on trainning and test set 2.72257407002985% and 3.857264231096%
 ```
 
 ![**Figure 1:** Tile plot showing percentage of the activities predicted versus their actual activity label in the `test` data set using the model, `modfitgbm` ](project_files/figure-html/plot_gbm-1.png)
@@ -89,7 +94,7 @@ inflist <- summary(modfitgbm)
 
 A series of models were fitted using the C5.0 decision tree model increasing the number of predictors by 5 each time up to a total maximum of 40. The formula of the predictor was constructed using `paste()`. The right hand side of the formula was formed using `paste()` with `collaspe = " + "` to collapse the list into a single string separated by the specified string.
 
-The C5.0 model was implemented using 10-fold cross validation with 5 repeats and defined in a variable named `train_control`. The C5.0 model was fitted using `train()` from the caret package with the verbosity of output set to be silent (i.e. `verbose=FALSE`). The out of sample error of the outputted model, `modfittemp` is obtained using the imputed function, `accu()` separately with the training and test set. The output of the function was aggregated into a data frame named `errdat`. The outputted model, initially outputted to a variable named, `modfittemp` is reassigned to a variable named modfit*i*, where *i* is the number of predictors included in the model.
+The C5.0 model was implemented using 10-fold cross validation with 5 repeats and defined in a variable named `train_control`. The C5.0 model was fitted using `train()` from the caret package with the verbosity of output set to be silent (i.e. `verbose=FALSE`). The out of sample error of the outputted model, `modfittemp` is obtained using the imputed function, `accu()` separately with the training and test set. The output of the function was aggregated into a data frame named `errdat`. The outputted model, initially outputted to a variable named, `modfittemp` is reassigned to a variable named modfit*x*, where *i* is the number of predictors included in the model.
 
 
 ```r
@@ -117,6 +122,7 @@ for (i in seq(5,40,by = 5)) {
      errdat <- rbind(errdat, c(i, errtmp1, errtmp2))
      assign(paste("modfit",i,sep = ""), modfittmp)
 }
+
 colnames(errdat) <- c("Variables_used", "Train", "Test")
 ```
 
@@ -157,7 +163,7 @@ ggplot(data=de1, aes(x=Variables_used, y=err, color=variable)) +
 
 ![**Figure 2:** Plot showing out of sample error versus the number of predictors in the C5.0 decisson tree when predicitions are carried out using the training and test set. Dashed line at 0.5 denotes a out of sample error of 0.5% to illustrate how the value is converging. Inset plot shows zoomed in section of the plot to show the small out of sample error observed when the model predicts against the training set ](project_files/figure-html/err_plot-1.png)
 
-In Figure 2 it can be seen that even with very few predictors the C5.0 model is better at predicting the activity than the gbm model fitted earlier. With an increasing number of predictors the out of sample error on the testing set decreases until it converges at approximately 0.5% at 25 predictors. The out of sample error on the model with the training set very rapidly converges to 0% which is expected as the model is being tested against the data it has been trained with. In the interest of minimizing the number of predictors used while maintaining accuracy I concluded that a final model that uses 20 predictors gives the best balance.
+In Figure 2 it can be seen that even with very few predictors the C5.0 model is better at predicting the activity than the gbm model fitted earlier. With an increasing number of predictors the out of sample error on the testing set decreases until it converges at approximately 0.5% at 25 predictors. The out of sample error on the model with the training set very rapidly converges to 0% which is expected as the data set the model is being tested against, is the data it has been trained with. In the interest of minimizing the number of predictors used while maintaining accuracy I concluded that a final model that uses 20 predictors gives the best balance.
 
 The resulting model was tested using the `test` data set using `predict()` from the stats package. The frequency of each predicted activity versus actual activity label was calculated. These frequencies were then expressed as a percentage of the actual frequency of the activity in the `test` data set. Using the function `plotter()` the percentage accuracy of the selected model, `modfit20` was plotted as a tile plot as seen in Figure 3.
 
@@ -204,11 +210,11 @@ cm1$byClass
 
 ```r
 a1 <- accu(modfit, test, test$classe)
-message(c("Out of sample error on test set ", a2, "%"))
+message(c("Out of sample error on test set ", a1, "%"))
 ```
 
 ```
-## Out of sample error on test set 3.857264231096%
+## Out of sample error on test set 0.577740016992356%
 ```
 
 ## Conclusions
