@@ -80,6 +80,10 @@ train   <- dtrain[inTrain,]
 test    <- dtrain[-inTrain,]
 ```
 
+## Building the Model
+
+### Initial Inspection and Important Variables
+
 A visual inspection of the data using `featurePlot()` does not show many clear correlations or differences in the distributions of the data that could be exploited to form a model. However, some exploratory models found the magnetic field data to be important to detect the dumbbell (which is likely made of steel), followed by the data from the gyros and the accelerometers.
 
 In order to obtain an insight into which variables are either important or can be striped away, a general boosted model (gbm) was fitted with `classe` as the outcome and the rest of the data set as the predictors. The gbm model was fitted using `train()` from the caret package with the verbosity of output set to be silent (i.e. `verbose=FALSE`). Using `trainControl()`, `train()` was set to implement 10-fold cross-validation while training the model. The resulting model was placed in a variable named `modfitgbm`.
@@ -107,7 +111,18 @@ message(c("Out of sample error on trainning and test set ", a1, "%", " and ", a2
 plotgbm
 ```
 
-In Figure 1 it can be seen that in general the model predicts the correct activity greater than 95% of the time. The out of sample error was calculated to be 2.7% and 4.0% for the training and test sets respectively. As the model is predicting reasonably well (>90% correct classification), this model is a good starting point to determine the importance of each variable to predicting which activity is being performed. Following the methodology of Ugulino *et al.* [1] where they used a C4.5 decision tree model, I used as a starting point a C5.0 decision tree model. C5.0 was selected over C4.5 due to improvements in speed, memory usage and boosting support.
+In Figure 1 it can be seen that in general the model predicts the correct activity greater than 95% of the time. The model appears to confuse: A most oftten with B; B most often with A and C; C most often with B and D; D most often with C; and E most often with B and D. The out of sample error was calculated to be 2.7% and 4.0% for the training and test sets respectively. As the model is predicting reasonably well (>90% correct classification), this model is a good starting point to determine the importance of each variable to predicting which activity is being performed. The top 10 of these can be seen below.
+
+```{r imp_var, echo=FALSE, fig.keep='none'}
+inflist <- summary(modfitgbm)
+inflist[1:10,1]
+```
+
+Looking at the above list, the most important predictors are related to the orientation of the sensor, mainly in the belt region. Another important predictor is the accelometer on the dumb bell itself but more curriously the magnetic field arround the dumb bell is important considering the object.
+
+### Construction of the Final Model
+
+Following the methodology of Ugulino *et al.* [1] where they used a C4.5 decision tree model, I used as a starting point a C5.0 decision tree model. C5.0 was selected over C4.5 due to improvements in speed, memory usage and boosting support.
 
 In order to minimize the number of predictors in the final model versus accuracy the list of relative influences from `modfitgmb` was used as a starting point and placed into a data frame named `inflist`.
 
@@ -184,7 +199,9 @@ ggplot(data=de1, aes(x=Variables_used, y=err, color=variable)) +
 
 In Figure 2 it can be seen that even with very few predictors the C5.0 model is better at predicting the activity than the gbm model fitted earlier. With an increasing number of predictors the out of sample error on the testing set decreases until it converges at approximately 0.5% at 25 predictors. The out of sample error on the model with the training set very rapidly converges to 0% which is expected as the data set the model is being tested against, is the data it has been trained with. In the interest of minimizing the number of predictors used while maintaining accuracy I concluded that a final model that uses 20 predictors gives the best balance.
 
-The resulting model was tested using the `test` data set using `predict()` from the stats package. The frequency of each predicted activity versus actual activity label was calculated. These frequencies were then expressed as a percentage of the actual frequency of the activity in the `test` data set. Using the function `plotter()` the percentage accuracy of the selected model, `modfit20` was plotted as a tile plot as seen in Figure 3.
+## Evaluating the Final Selected Model
+
+The selected model containing 20 predictors was tested using the `test` data set using `predict()` from the stats package. The frequency of each predicted activity versus actual activity label was calculated. These frequencies were then expressed as a percentage of the actual frequency of the activity in the `test` data set. Using the function `plotter()` the percentage accuracy of the selected model, `modfit20` was plotted as a tile plot as seen in Figure 3.
 
 ```{r c50plot, fig.cap="**Figure 3:** Tile plot showing percentage of the activities predicted versus their actual activity label in the `test` data set using the model, `modfit20`"}
 modfit <- modfit20

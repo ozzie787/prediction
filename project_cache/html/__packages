@@ -1,0 +1,10 @@
+base
+knitr
+data.table
+dplyr
+tidyr
+carData
+car
+lattice
+ggplot2
+caret
